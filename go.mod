@@ -1,4 +1,4 @@
-module helloDB
+module SLC
 
 go 1.16
 

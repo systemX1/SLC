@@ -1,7 +1,7 @@
 package main
 
 import (
-	"helloDB/src/cmd"
+	"SLC/src/cmd"
 )
 
 func main() {

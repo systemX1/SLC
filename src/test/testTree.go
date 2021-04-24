@@ -3,7 +3,7 @@ package test
 import (
 	"fmt"
 	"golang.org/x/tour/tree"
-	learn2 "helloDB/src/learn"
+	learn2 "SLC/src/learn"
 )
 
 func Tree()  {

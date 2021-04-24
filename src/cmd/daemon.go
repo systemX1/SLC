@@ -1,9 +1,9 @@
 package cmd
 
 import (
+	"SLC/src/daemon"
 	"fmt"
 	"github.com/spf13/cobra"
-	"helloDB/src/daemon"
 )
 
 

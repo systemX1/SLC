@@ -2,7 +2,7 @@ package test
 
 import (
 	"fmt"
-	learn2 "helloDB/src/learn"
+	learn2 "SLC/src/learn"
 	"time"
 )
 

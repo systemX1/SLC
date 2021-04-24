@@ -1,9 +1,9 @@
 package cmd
 
 import (
+	"SLC/src/daemon"
 	"fmt"
 	"github.com/spf13/cobra"
-	"helloDB/src/daemon"
 )
 
 var runCmd = &cobra.Command{
@@ -11,8 +11,9 @@ var runCmd = &cobra.Command{
 	Short: "run short",
 	Long: `run long`,
 	Run: func(cmd *cobra.Command, args []string) {
+		var cmds []string
 		for _, v := range args {
-			fmt.Println(v)
+			cmds = append(cmds, v)
 		}
 
 		tty, err := cmd.Flags().GetBool("tty")
@@ -20,12 +21,12 @@ var runCmd = &cobra.Command{
 			fmt.Println(err)
 		}
 
-		run(tty)
+		run(cmds, tty)
 	},
 }
 
-func run(tty bool) {
-	daemon.RunParentProcess(tty)
+func run(cmds []string, tty bool) {
+	daemon.RunParentProcess(cmds, tty)
 
 }
 
