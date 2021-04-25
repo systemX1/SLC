@@ -11,14 +11,15 @@ var runCmd = &cobra.Command{
 	Short: "run short",
 	Long: `run long`,
 	Run: func(cmd *cobra.Command, args []string) {
-		var cmds []string
-		for _, v := range args {
-			cmds = append(cmds, v)
-		}
-
 		tty, err := cmd.Flags().GetBool("tty")
 		if err != nil {
 			fmt.Println(err)
+		}
+
+		var cmds []string
+		cmds = append(cmds, "daemon")
+		for _, v := range args {
+			cmds = append(cmds, v)
 		}
 
 		run(cmds, tty)
@@ -26,8 +27,8 @@ var runCmd = &cobra.Command{
 }
 
 func run(cmds []string, tty bool) {
-	daemon.RunParentProcess(cmds, tty)
-
+	//daemon.RunParentProcess(cmds, tty)
+	daemon.Run()
 }
 
 

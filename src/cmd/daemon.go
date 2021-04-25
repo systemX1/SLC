@@ -13,11 +13,12 @@ var daemonCmd = &cobra.Command{
 	Short: "daemon short",
 	Long: `daemon long`,
 	Run: func(cmd *cobra.Command, args []string) {
-		tty, err := cmd.Flags().GetBool("tty")
+		_, err := cmd.Flags().GetBool("tty")
 		if err != nil {
 			fmt.Println(err)
 		}
-		daemon.NewInitProcess(tty)
+		//daemon.NewInitProcess(tty)
+		daemon.Run()
 	},
 }
 
