@@ -3,12 +3,11 @@ package daemon
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"syscall"
 )
 
-//PivotRoot must be called from within the new Mount namespace, otherwise we'll end up changing the host's '/' which is not the intention
+// PivotRoot must be called from within the new Mount namespace, otherwise we'll end up changing the host's '/' which is not the intention
 func pivotRoot(newRoot string) error {
 	// 声明新的mount namespace独立
 	if err := syscall.Mount("", "/", "", syscall.MS_PRIVATE | syscall.MS_REC, ""); err != nil {
@@ -45,35 +44,30 @@ func pivotRoot(newRoot string) error {
 	// Note that this also applies to the calling process: pivotRoot() may
 	// or may not affect its current working directory.  It is therefore
 	// recommended to call chdir("/") immediately after pivotRoot().
-	//if err := os.Chdir("/"); err != nil {
-	//	return fmt.Errorf("while Chdir %v", err)
-	//}
-	//
-	//printPWD(newRoot, "4")
-	//
-	//// umount putOld, which now lives at /.pivot_root
-	//putOld = "/.pivot_root"
-	//if err := syscall.Unmount(putOld, syscall.MNT_DETACH); err != nil {
-	//	return fmt.Errorf("while unmount putOld %v", err)
-	//}
-	//printPWD(newRoot, "5")
-	//
-	//// remove put_old
-	//if err := os.RemoveAll(putOld); err != nil {
-	//	return fmt.Errorf("while remove putOld %v", err)
-	//}
-	//printPWD(newRoot, "6")
+	if err := os.Chdir("/"); err != nil {
+		return fmt.Errorf("while Chdir %v", err)
+	}
+
+	printPWD(newRoot, "4")
+
+	// umount putOld, which now lives at /.pivot_root
+	putOld = "/.pivot_root"
+	if err := syscall.Unmount(putOld, syscall.MNT_DETACH); err != nil {
+		return fmt.Errorf("while unmount putOld %v", err)
+	}
+	printPWD(newRoot, "5")
+
+	// remove put_old
+	if err := os.RemoveAll(putOld); err != nil {
+		return fmt.Errorf("while remove putOld %v", err)
+	}
+	printPWD(newRoot, "6")
 	return nil
 }
 
 func printPWD(newRoot string, note string) {
 	pwd, _ := os.Getwd()
 	fmt.Printf("%s pwd: %v\n", note, pwd)
-	c := filepath.Join(newRoot, "/bin/ls")
-	cmd := exec.Command(c)
-	if err := cmd.Run(); err != nil {
-		fmt.Println(err)
-	}
 }
 
 func mountProc() error {
