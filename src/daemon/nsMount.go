@@ -40,7 +40,7 @@ func pivotRoot(newRoot string) error {
 	if err := syscall.PivotRoot(newRoot, putOld); err != nil {
 		return fmt.Errorf("syscalling PivotRoot %v", err)
 	}
-	//printPWD(newRoot, "3")
+	printPWD(newRoot, "3")
 
 	// Note that this also applies to the calling process: pivotRoot() may
 	// or may not affect its current working directory.  It is therefore
