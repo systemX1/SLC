@@ -4,6 +4,7 @@ import (
 	"SLC/src/daemon"
 	"fmt"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 var runCmd = &cobra.Command{
@@ -17,18 +18,18 @@ var runCmd = &cobra.Command{
 		}
 
 		var cmds []string
-		cmds = append(cmds, "daemon")
-		for _, v := range args {
+		for _, v := range os.Args[2:] {
 			cmds = append(cmds, v)
 		}
 
-		run(cmds, tty)
+		runAction(cmds, tty)
 	},
 }
 
-func run(cmds []string, tty bool) {
+// cmds, whether run front
+func runAction(cmds []string, tty bool) {
 	//daemon.RunParentProcess(cmds, tty)
-	daemon.Run()
+	daemon.Init(cmds, tty)
 }
 
 

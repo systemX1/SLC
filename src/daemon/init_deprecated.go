@@ -110,7 +110,7 @@ func NewInitProcess(tty bool)  {
 }
 
 func setUpMount() error {
-	//PivotRoot()
+	setPivotRoot()
 
 	// systemd加入linux之后, mount namespace变成shared by default, 必须显式声明这个新的mount namespace独立。
 	// MS_PRIVATE Make this mount point private. Mount and unmount events do not propagate into or out of this mount point. MS_REC recursive 递归.
@@ -130,14 +130,11 @@ func setUpMount() error {
 		return err
 	}
 
-
-
-
 	return nil
 }
 
 // PivotRoot must be called from within the new Mount namespace, otherwise we'll end up changing the host's '/' which is not the intention
-func PivotRoot()  {
+func setPivotRoot()  {
 	getInfo("PivotRoot")
 
 
