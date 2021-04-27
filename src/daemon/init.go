@@ -3,7 +3,6 @@ package daemon
 import (
 	"SLC/src/reexec"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/sys/unix"
 	"os"
 	"syscall"
@@ -22,22 +21,18 @@ func Init(cmds []string, tty bool) {
 
 func nsInit() {
 	fmt.Println("func nsInit")
-	pwd, err := os.Getwd()
-	if err != nil {
-		log.Errorf("Get current location error %v", err)
-		return
-	}
+
 
 	cmds := readCommand()
 	fmt.Println("cmds reci: ", cmds)
 
-	if err := pivotRoot(pwd); err != nil {
+	if err := pivotRoot(); err != nil {
 		fmt.Printf("Error running pivot_root - %s\n", err)
 		os.Exit(1)
 	}
 
 	if err := mountProc(); err != nil {
-		fmt.Printf("Error mounting /proc - %s\n", err)
+		fmt.Printf("Error mounting - %s\n", err)
 		os.Exit(1)
 	}
 
@@ -58,14 +53,13 @@ func nsRun(cmds []string) {
 	fmt.Println("func nsRun")
 
 	if err := unix.Exec("/bin/sh", nil, os.Environ()); err != nil {
-		fmt.Println(err)
+		fmt.Println("Execve", err)
 	}
 }
 
 func Run(cmds []string, tty bool) {
-	newRoot := "/tmp/busybox/rootfs"
-
-	cmd := reexec.Command("nsInit", "daemon", "-i", newRoot)
+	newRoot := "/tmp/ubuntu"
+	cmd := reexec.Command("nsInit", "daemon", "-i")
 
 	if tty {
 		cmd.Stdin = os.Stdin
