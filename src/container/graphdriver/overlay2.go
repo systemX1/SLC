@@ -49,8 +49,10 @@ func ReexecMount() {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
+	log.Infoln("reexec mount")
+
 	if err := cmd.Start(); err != nil {
-		fmt.Printf("Error reexec the monut command - %s\n", err)
+		log.Errorf("Error reexec the monut command - %s\n", err)
 		os.Exit(1)
 	}
 }
@@ -72,16 +74,16 @@ func createWritableLayer() {
 }
 
 func createMountPoint() {
-	if err := os.Mkdir(mountDir, 0777); err != nil {
-		log.Errorf("creating mount point in %s : %v", mountDir, err)
-	}
-	if err := os.Mkdir(workdir, 0777); err != nil {
-		log.Errorf("creating workdir in %s : %v", workdir, err)
-	}
+	//if err := os.Mkdir(mountDir, 0777); err != nil {
+	//	log.Errorf("creating mount point in %s : %v", mountDir, err)
+	//}
+	//if err := os.Mkdir(workdir, 0777); err != nil {
+	//	log.Errorf("creating workdir in %s : %v", workdir, err)
+	//}
 
-	/*	if err := unix.Mount("", "/", "overlay", unix.MS_REC, ""); err != nil {
-		log.Errorf("while mounting overlay2 in %s : %v", mountDir, err)
-	}*/
+	//	if err := unix.Mount("", "/", "overlay", unix.MS_REC, ""); err != nil {
+	//	log.Errorf("while mounting overlay2 in %s : %v", mountDir, err)
+	//}
 
 	dir := fmt.Sprintf("lowerdir=%s,upperdir=%s,workdir=%s", readonlyDir, writeDir, workdir)
 

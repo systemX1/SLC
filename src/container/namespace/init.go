@@ -21,7 +21,6 @@ func Init(cmds []string, tty bool) {
 
 func nsInit() {
 	fmt.Println("func nsInit")
-	//graphdriver.NewWorkSpace()
 
 	cmds := readCommand()
 	fmt.Println("cmds reci: ", cmds)

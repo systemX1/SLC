@@ -2,6 +2,7 @@ package namespace
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/sys/unix"
 	"os"
 	"path/filepath"
@@ -9,6 +10,7 @@ import (
 
 // PivotRoot must be called from within the new Mount namespace, otherwise we'll end up changing the host's '/' which is not the intention
 func pivotRoot() error {
+
 	newRoot, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("Get pwd error %v\n", err)
@@ -59,14 +61,15 @@ func pivotRoot() error {
 		return fmt.Errorf("while remove putOld %v", err)
 	}
 
+	//graphdriver.NewWorkSpace()
 	return nil
 }
 
 func mountProc() error {
 	// systemd加入linux之后, mount namespace变成shared by default, 必须显式声明这个新的mount namespace独立。
 	// MS_PRIVATE Make this mount point private. Mount and unmount events do not propagate into or out of this mount point. MS_REC recursive递归
-	err := unix.Mount("", "/", "", unix.MS_PRIVATE|unix.MS_REC, "")
-	if err != nil {
+
+	if err := unix.Mount("", "/", "", unix.MS_PRIVATE|unix.MS_REC, ""); err != nil {
 		return fmt.Errorf("while making mount namespace private: %v", err)
 	}
 
@@ -90,13 +93,28 @@ func mountProc() error {
 		return fmt.Errorf("while mount tmpfs error: %v", err)
 	}
 
-	if err := unix.Mount("devpts", "/dev/pts", "devpts", unix.MS_NOSUID|unix.MS_RELATIME|unix.MS_NOEXEC, "mode=620, ptmxmode=666"); err != nil {
+	if err := unix.Mount("udev", "/dev", "tmpfs", unix.MS_NOSUID|unix.MS_RELATIME|unix.MS_NOEXEC, "mode=755"); err != nil {
 		return fmt.Errorf("while mount tmpfs error: %v", err)
 	}
 
-	if err := unix.Mount("devpts", "/dev/console", "devpts", unix.MS_NOSUID|unix.MS_RELATIME|unix.MS_NOEXEC, "mode=620, ptmxmode=666"); err != nil {
-		return fmt.Errorf("while mount tmpfs error: %v", err)
+	if err := os.Mkdir("./dev/pts", 0777); err != nil {
+		log.Errorf("creating workdir in %s : %v", "/dev/pts", err)
 	}
+	if err := unix.Mount("devpts", "/dev/pts", "devpts", unix.MS_NOSUID|unix.MS_RELATIME|unix.MS_NOEXEC, "mode=620"); err != nil {
+		return fmt.Errorf("while mount /dev/pts error: %v", err)
+	}
+
+	if err := os.Mkdir("./dev/console", 0777); err != nil {
+		log.Errorf("creating workdir in %s : %v", "/dev/console", err)
+	}
+	if err := unix.Mount("devpts", "/dev/console", "devpts", unix.MS_NOSUID|unix.MS_RELATIME|unix.MS_NOEXEC, "mode=620"); err != nil {
+		return fmt.Errorf("while mount /dev/console error: %v", err)
+	}
+
+
+
+
+
 
 	return nil
 }
