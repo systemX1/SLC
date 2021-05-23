@@ -30,6 +30,6 @@ var runCmd = &cobra.Command{
 func runAction(cmds []string, tty bool) {
 	//container.RunParentProcess(cmds, tty)
 	namespace.Init(cmds, tty)
-}
 
+}
 

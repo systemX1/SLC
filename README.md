@@ -1,6 +1,6 @@
 # SLC(System Linux Container)
 
-tiny docker
+own implementation of a tiny docker
 
 ## Deploy
 
