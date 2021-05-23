@@ -1,4 +1,4 @@
-package daemon
+package namespace
 
 import (
 	"SLC/src/reexec"
@@ -21,7 +21,7 @@ func Init(cmds []string, tty bool) {
 
 func nsInit() {
 	fmt.Println("func nsInit")
-
+	//graphdriver.NewWorkSpace()
 
 	cmds := readCommand()
 	fmt.Println("cmds reci: ", cmds)
@@ -46,20 +46,26 @@ func nsInit() {
 	//	os.Exit(1)
 	//}
 
-	nsRun(cmds)
-}
-
-func nsRun(cmds []string) {
-	fmt.Println("func nsRun")
-
-	if err := unix.Exec("/bin/sh", nil, os.Environ()); err != nil {
-		fmt.Println("Execve", err)
+	if err := nsRun(cmds); err != nil {
+		return
 	}
 }
 
+func nsRun(cmds []string) error {
+	fmt.Println("func nsRun")
+
+	if err := unix.Exec("/bin/sh", nil, os.Environ()); err != nil {
+		return fmt.Errorf("while calling execve %v", err)
+	}
+	return nil
+}
+
 func Run(cmds []string, tty bool) {
-	newRoot := "/tmp/ubuntu"
-	cmd := reexec.Command("nsInit", "daemon", "-i")
+	newRoot := "/tmp/image/ubuntu/merged"
+
+	//graphdriver.ReexecMount()
+
+	cmd := reexec.Command("nsInit", "container", "-i")
 
 	if tty {
 		cmd.Stdin = os.Stdin
@@ -111,11 +117,3 @@ func Run(cmds []string, tty bool) {
 		os.Exit(1)
 	}
 }
-
-
-
-
-
-
-
-

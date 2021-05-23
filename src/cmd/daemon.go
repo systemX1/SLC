@@ -1,17 +1,15 @@
 package cmd
 
 import (
-	"SLC/src/daemon"
+	"SLC/src/container/namespace"
 	"fmt"
 	"github.com/spf13/cobra"
 )
 
-
-
 var daemonCmd = &cobra.Command{
-	Use:   "daemon",
-	Short: "daemon short",
-	Long: `daemon long`,
+	Use:   "container",
+	Short: "container short",
+	Long:  `container long`,
 	Run: func(cmd *cobra.Command, args []string) {
 		tty, err := cmd.Flags().GetBool("tty")
 		if err != nil {
@@ -23,9 +21,7 @@ var daemonCmd = &cobra.Command{
 			cmds = append(cmds, v)
 		}
 
-		//daemon.NewInitProcess(tty)
-		daemon.Init(cmds, tty)
+		//container.NewInitProcess(tty)
+		namespace.Init(cmds, tty)
 	},
 }
-
-

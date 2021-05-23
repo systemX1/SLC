@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"SLC/src/daemon"
+	"SLC/src/container/namespace"
 	"fmt"
 	"github.com/spf13/cobra"
 	"os"
@@ -10,7 +10,7 @@ import (
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "run short",
-	Long: `run long`,
+	Long:  `run long`,
 	Run: func(cmd *cobra.Command, args []string) {
 		tty, err := cmd.Flags().GetBool("tty")
 		if err != nil {
@@ -28,10 +28,6 @@ var runCmd = &cobra.Command{
 
 // cmds, whether run front
 func runAction(cmds []string, tty bool) {
-	//daemon.RunParentProcess(cmds, tty)
-	daemon.Init(cmds, tty)
+	//container.RunParentProcess(cmds, tty)
+	namespace.Init(cmds, tty)
 }
-
-
-
-

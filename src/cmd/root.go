@@ -8,14 +8,16 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "slc",
-	Short: "SLC(systemxrs linux container) is a experiment tool designed to make it easier to create, deploy, and runAction applications by using containers.",
-	Long: `SLC(systemxrs linux container) is a experiment tool designed to make it easier to create, deploy, and runAction applications by using containers. Containers allow a developer to package up an application with all of the parts it needs, such as libraries and other dependencies, and deploy it as one package.`,
+	Use:     "slc",
+	Short:   "SLC(systemxrs linux container) is a experiment tool designed to make it easier to create, deploy, and runAction applications by using containers.",
+	Long:    `SLC(systemxrs linux container) is a experiment tool designed to make it easier to create, deploy, and runAction applications by using containers. Containers allow a developer to package up an application with all of the parts it needs, such as libraries and other dependencies, and deploy it as one package.`,
 	Version: "0.1.0",
 	Run: func(cmd *cobra.Command, args []string) {
 		//fmt.Println("args: ", strings.Join(args, " "))
 		isTest, _ := cmd.Flags().GetBool("test")
-		if isTest == true { test.Run() }
+		if isTest == true {
+			test.Run()
+		}
 	},
 }
 
@@ -31,13 +33,11 @@ func init() {
 
 	rootCmd.Flags().BoolP("test", "t", false, "test")
 
-
 	rootCmd.AddCommand(runCmd)
 	runCmd.Flags().BoolP("tty", "i", false, "runAction frontGround")
 
 	rootCmd.AddCommand(daemonCmd)
 	daemonCmd.Flags().BoolP("tty", "i", false, "runAction frontGround")
+
+	rootCmd.AddCommand(mountfromCmd)
 }
-
-
-

@@ -1,12 +1,10 @@
-package daemon
+package namespace
 
 import (
 	"fmt"
 	"golang.org/x/sys/unix"
-	"io/ioutil"
 	"os"
 	"path/filepath"
-	"syscall"
 )
 
 // PivotRoot must be called from within the new Mount namespace, otherwise we'll end up changing the host's '/' which is not the intention
@@ -17,12 +15,12 @@ func pivotRoot() error {
 	}
 
 	// 声明新的mount namespace独立
-	if err := unix.Mount("", "/", "", syscall.MS_PRIVATE | syscall.MS_REC, ""); err != nil {
+	if err := unix.Mount("", "/", "", unix.MS_PRIVATE|unix.MS_REC, ""); err != nil {
 		return err
 	}
 
 	// bind mount new_root to itself - this is a slight hack needed to satisfy requirement (2)
-	if err := unix.Mount(newRoot, newRoot, "bind", syscall.MS_BIND | syscall.MS_REC, ""); err != nil {
+	if err := unix.Mount(newRoot, newRoot, "bind", unix.MS_BIND|unix.MS_REC, ""); err != nil {
 		return fmt.Errorf("mount newRoot %s to itself error: %v", newRoot, err)
 	}
 
@@ -43,16 +41,16 @@ func pivotRoot() error {
 		return fmt.Errorf("syscalling PivotRoot %v", err)
 	}
 
-	//Note that this also applies to the calling process: pivotRoot() may
-	//or may not affect its current working directory.  It is therefore
-	//recommended to call chdir("/") immediately after pivotRoot().
+	// Note that this also applies to the calling process: pivotRoot() may
+	// or may not affect its current working directory.  It is therefore
+	// recommended to call chdir("/") immediately after pivotRoot().
 	if err := os.Chdir("/"); err != nil {
 		return fmt.Errorf("while Chdir %v", err)
 	}
 
 	// umount putOld, which now lives at .pivot_root
 	putOld = "/.pivot_root"
-	if err := syscall.Unmount(putOld, syscall.MNT_DETACH); err != nil {
+	if err := unix.Unmount(putOld, unix.MNT_DETACH); err != nil {
 		return fmt.Errorf("while unmount putOld %v", err)
 	}
 
@@ -60,13 +58,14 @@ func pivotRoot() error {
 	if err := os.RemoveAll(putOld); err != nil {
 		return fmt.Errorf("while remove putOld %v", err)
 	}
+
 	return nil
 }
 
 func mountProc() error {
 	// systemd加入linux之后, mount namespace变成shared by default, 必须显式声明这个新的mount namespace独立。
 	// MS_PRIVATE Make this mount point private. Mount and unmount events do not propagate into or out of this mount point. MS_REC recursive递归
-	err := syscall.Mount("", "/", "", syscall.MS_PRIVATE | syscall.MS_REC, "")
+	err := unix.Mount("", "/", "", unix.MS_PRIVATE|unix.MS_REC, "")
 	if err != nil {
 		return fmt.Errorf("while making mount namespace private: %v", err)
 	}
@@ -74,35 +73,30 @@ func mountProc() error {
 	// MS_NOEXEC Do not allow other programs to be executed from this filesystem.
 	// MS_NOSUID Do not honor set-user-ID and set-group-ID bits or file capabilities when executing programs from this filesystem.
 	// MS_NODEV Do not allow access to devices (special files) on this filesystem.
-	defaultMountFlags := syscall.MS_NOEXEC | syscall.MS_NOSUID | syscall.MS_NODEV
-	if err := syscall.Mount("proc", "/proc", "proc", uintptr(defaultMountFlags), ""); err != nil {
+
+	if err := unix.Mount("proc", "/proc", "proc", unix.MS_NOSUID|unix.MS_NODEV|unix.MS_NOEXEC|unix.MS_RELATIME, ""); err != nil {
 		return fmt.Errorf("while mount proc error: %v", err)
 	}
 
-	//if err := syscall.Mount("main", "/main", "", uintptr(defaultMountFlags), ""); err != nil {
-	//	return fmt.Errorf("while mount main error: %v", err)
-	//}
-
-	if err := syscall.Mount("tmpfs", "/dev", "tmpfs", syscall.MS_NOSUID | syscall.MS_STRICTATIME, "mode=755"); err != nil {
+	if err := unix.Mount("tmpfs", "/dev", "tmpfs", unix.MS_NOSUID|unix.MS_STRICTATIME, "mode=755"); err != nil {
 		return fmt.Errorf("while mount tmpfs error: %v", err)
 	}
+
+	if err := unix.Mount("sysfs", "/sys", "sysfs", unix.MS_NOSUID|unix.MS_NODEV|unix.MS_RELATIME|unix.MS_NOEXEC|unix.MS_RDONLY, "mode=755"); err != nil {
+		return fmt.Errorf("while mount tmpfs error: %v", err)
+	}
+
+	if err := unix.Mount("udev", "/dev", "tmpfs", unix.MS_NOSUID|unix.MS_RELATIME|unix.MS_NOEXEC, "mode=755"); err != nil {
+		return fmt.Errorf("while mount tmpfs error: %v", err)
+	}
+
+	if err := unix.Mount("devpts", "/dev/pts", "devpts", unix.MS_NOSUID|unix.MS_RELATIME|unix.MS_NOEXEC, "mode=620, ptmxmode=666"); err != nil {
+		return fmt.Errorf("while mount tmpfs error: %v", err)
+	}
+
+	if err := unix.Mount("devpts", "/dev/console", "devpts", unix.MS_NOSUID|unix.MS_RELATIME|unix.MS_NOEXEC, "mode=620, ptmxmode=666"); err != nil {
+		return fmt.Errorf("while mount tmpfs error: %v", err)
+	}
+
 	return nil
 }
-
-func printPWD(note string) {
-	pwd, _ := os.Getwd()
-	fmt.Printf("%s pwd: %v\n", note, pwd)
-}
-
-func printls(dir string) {
-	if dirList, err := ioutil.ReadDir(dir); err != nil {
-		fmt.Println(err.Error())
-	} else {
-		fmt.Printf("%s - ", dir)
-		for _, dirInfo := range dirList {
-			fmt.Printf("%s ", dirInfo.Name())
-		}
-		fmt.Printf("\n")
-	}
-}
-

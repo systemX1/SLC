@@ -1,4 +1,4 @@
-package daemon
+package namespace
 
 import (
 	"fmt"
@@ -36,6 +36,3 @@ func readCommand() []string {
 	msgStr := string(msg)
 	return strings.Split(msgStr, " ")
 }
-
-
-
